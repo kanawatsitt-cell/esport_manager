@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}Players — E-Sports Manager{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>🎮 <span class="hl">PLAYERS</span></h1>
+  <button class="btn btn-primary" onclick="openModal('addPlayerModal')">+ Add Player</button>
+</div>
+
+<div class="card">
+  <div class="scrollable">
+  <table>
+    <thead><tr>
+      <th>#</th><th>IGN</th><th>Real Name</th><th>Team</th><th>Role</th><th>Nationality</th><th>Salary/mo</th><th>Actions</th>
+    </tr></thead>
+    <tbody>
+    {% for p in players %}
+    <tr>
+      <td style="color:var(--muted);">{{ p.player_id }}</td>
+      <td><strong style="color:var(--accent);">{{ p.ign }}</strong></td>
+      <td>{{ p.real_name }}</td>
+      <td><span class="badge badge-purple">{{ p.team_name }}</span></td>
+      <td><span class="badge badge-blue">{{ p.role }}</span></td>
+      <td>{{ p.nationality }}</td>
+      <td style="color:var(--green);">${{ "{:,.0f}".format(p.salary) }}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-edit btn-sm"
+          onclick="openEditPlayer({{ p.player_id }},'{{ p.ign }}','{{ p.real_name }}',{{ p.team_id }},'{{ p.role }}','{{ p.nationality }}',{{ p.salary }})">
+          ✏️ Edit
+        </button>
+        <form method="POST" action="/players/delete/{{ p.player_id }}" onsubmit="return confirm('Delete {{ p.ign }}?')">
+          <button class="btn btn-danger btn-sm">🗑️ Del</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal-overlay" id="addPlayerModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('addPlayerModal')">✕</button>
+    <h2>➕ ADD NEW PLAYER</h2>
+    <form method="POST" action="/players/add">
+      <div class="form-grid">
+        <div><label>IGN (In-Game Name)</label><input name="ign" required placeholder="e.g. NightHawk"></div>
+        <div><label>Real Name</label><input name="real_name" required placeholder="Full name"></div>
+        <div><label>Team</label>
+          <select name="team_id">
+            {% for t in teams %}<option value="{{ t.team_id }}">{{ t.team_name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div><label>Role</label>
+          <select name="role">
+            <option>Duelist</option><option>Controller</option><option>Initiator</option>
+            <option>Sentinel</option><option>AWPer</option><option>Rifler</option>
+            <option>IGL</option><option>Mid</option><option>ADC</option><option>Carry</option><option>Support</option>
+          </select>
+        </div>
+        <div><label>Nationality</label><input name="nationality" required placeholder="e.g. Thai"></div>
+        <div><label>Monthly Salary ($)</label><input name="salary" type="number" required placeholder="e.g. 45000"></div>
+      </div>
+      <div style="margin-top:16px;text-align:right;">
+        <button type="submit" class="btn btn-primary">Save Player</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editPlayerModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('editPlayerModal')">✕</button>
+    <h2>✏️ EDIT PLAYER</h2>
+    <form method="POST" id="editPlayerForm">
+      <div class="form-grid">
+        <div><label>IGN</label><input name="ign" id="ep_ign" required></div>
+        <div><label>Real Name</label><input name="real_name" id="ep_real_name" required></div>
+        <div><label>Team</label>
+          <select name="team_id" id="ep_team">
+            {% for t in teams %}<option value="{{ t.team_id }}">{{ t.team_name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div><label>Role</label>
+          <select name="role" id="ep_role">
+            <option>Duelist</option><option>Controller</option><option>Initiator</option>
+            <option>Sentinel</option><option>AWPer</option><option>Rifler</option>
+            <option>IGL</option><option>Mid</option><option>ADC</option><option>Carry</option><option>Support</option>
+          </select>
+        </div>
+        <div><label>Nationality</label><input name="nationality" id="ep_nat" required></div>
+        <div><label>Monthly Salary ($)</label><input name="salary" type="number" id="ep_salary" required></div>
+      </div>
+      <div style="margin-top:16px;text-align:right;">
+        <button type="submit" class="btn btn-primary">Update Player</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEditPlayer(id, ign, real_name, team_id, role, nat, salary) {
+  document.getElementById('editPlayerForm').action = '/players/edit/' + id;
+  document.getElementById('ep_ign').value = ign;
+  document.getElementById('ep_real_name').value = real_name;
+  document.getElementById('ep_nat').value = nat;
+  document.getElementById('ep_salary').value = salary;
+  const ts = document.getElementById('ep_team');
+  for (let o of ts.options) o.selected = parseInt(o.value) === team_id;
+  const rs = document.getElementById('ep_role');
+  for (let o of rs.options) o.selected = o.value === role;
+  openModal('editPlayerModal');
+}
+</script>
+{% endblock %}

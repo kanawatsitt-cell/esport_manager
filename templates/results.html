@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Match Results — E-Sports Manager{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>📈 <span class="hl">MATCH RESULTS</span></h1>
+  <button class="btn btn-primary" onclick="openModal('addResultModal')">+ Add Result</button>
+</div>
+
+<div class="card">
+  <div class="scrollable">
+  <table>
+    <thead><tr>
+      <th>#</th><th>Team</th><th>Tournament</th><th>Game</th><th>Place</th><th>Points</th><th>Prize Won</th><th>Actions</th>
+    </tr></thead>
+    <tbody>
+    {% for r in results %}
+    <tr>
+      <td style="color:var(--muted);">{{ r.result_id }}</td>
+      <td><strong>{{ r.team_name }}</strong></td>
+      <td style="color:var(--muted);font-size:.82rem;">{{ r.tournament_name }}</td>
+      <td><span class="badge badge-blue">{{ r.game }}</span></td>
+      <td class="place-{{ r.placement if r.placement <= 3 else '' }}">
+        {% if r.placement == 1 %}🥇{% elif r.placement == 2 %}🥈{% elif r.placement == 3 %}🥉{% endif %}
+        #{{ r.placement }}
+      </td>
+      <td><span style="color:var(--gold);">{{ r.points }}</span></td>
+      <td style="color:var(--green);">${{ "{:,.0f}".format(r.prize_won) }}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-edit btn-sm"
+          onclick="openEditResult({{ r.result_id }},{{ r.tournament_id }},{{ r.team_id }},{{ r.placement }},{{ r.points }},{{ r.prize_won }})">
+          ✏️ Edit
+        </button>
+        <form method="POST" action="/results/delete/{{ r.result_id }}" onsubmit="return confirm('Delete this result?')">
+          <button class="btn btn-danger btn-sm">🗑️ Del</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal-overlay" id="addResultModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('addResultModal')">✕</button>
+    <h2>➕ ADD MATCH RESULT</h2>
+    <form method="POST" action="/results/add">
+      <div class="form-grid">
+        <div><label>Tournament</label>
+          <select name="tournament_id">
+            {% for t in tournaments %}<option value="{{ t.tournament_id }}">{{ t.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div><label>Team</label>
+          <select name="team_id">
+            {% for t in teams %}<option value="{{ t.team_id }}">{{ t.team_name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div><label>Placement</label><input name="placement" type="number" min="1" required placeholder="e.g. 1"></div>
+        <div><label>Points</label><input name="points" type="number" min="0" required placeholder="e.g. 100"></div>
+        <div><label>Prize Won ($)</label><input name="prize_won" type="number" min="0" required placeholder="e.g. 200000"></div>
+      </div>
+      <div style="margin-top:16px;text-align:right;">
+        <button type="submit" class="btn btn-primary">Save Result</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editResultModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('editResultModal')">✕</button>
+    <h2>✏️ EDIT RESULT</h2>
+    <form method="POST" id="editResultForm">
+      <div class="form-grid">
+        <div><label>Tournament</label>
+          <select name="tournament_id" id="er_tourn">
+            {% for t in tournaments %}<option value="{{ t.tournament_id }}">{{ t.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div><label>Team</label>
+          <select name="team_id" id="er_team">
+            {% for t in teams %}<option value="{{ t.team_id }}">{{ t.team_name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div><label>Placement</label><input name="placement" type="number" id="er_place" min="1" required></div>
+        <div><label>Points</label><input name="points" type="number" id="er_points" min="0" required></div>
+        <div><label>Prize Won ($)</label><input name="prize_won" type="number" id="er_prize" min="0" required></div>
+      </div>
+      <div style="margin-top:16px;text-align:right;">
+        <button type="submit" class="btn btn-primary">Update Result</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEditResult(id, tid, team, place, pts, prize) {
+  document.getElementById('editResultForm').action = '/results/edit/' + id;
+  document.getElementById('er_place').value = place;
+  document.getElementById('er_points').value = pts;
+  document.getElementById('er_prize').value = prize;
+  const ts = document.getElementById('er_tourn');
+  for (let o of ts.options) o.selected = parseInt(o.value) === tid;
+  const tm = document.getElementById('er_team');
+  for (let o of tm.options) o.selected = parseInt(o.value) === team;
+  openModal('editResultModal');
+}
+</script>
+{% endblock %}

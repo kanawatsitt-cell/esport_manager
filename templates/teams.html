@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Teams — E-Sports Manager{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>🛡️ <span class="hl">TEAMS</span></h1>
+  <button class="btn btn-primary" onclick="openModal('addTeamModal')">+ Add Team</button>
+</div>
+
+<div class="card">
+  <div class="scrollable">
+  <table>
+    <thead><tr>
+      <th>#</th><th>Team Name</th><th>Game</th><th>Country</th><th>Founded</th><th>Players</th><th>Actions</th>
+    </tr></thead>
+    <tbody>
+    {% for t in teams %}
+    <tr>
+      <td style="color:var(--muted);">{{ t.team_id }}</td>
+      <td><strong>{{ t.team_name }}</strong></td>
+      <td><span class="badge badge-blue">{{ t.game }}</span></td>
+      <td>{{ t.country }}</td>
+      <td style="color:var(--muted);">{{ t.founded }}</td>
+      <td><span class="badge badge-purple">{{ t.player_count }}</span></td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-edit btn-sm" onclick="openEdit({{ t.team_id }},'{{ t.team_name }}','{{ t.game }}','{{ t.country }}','{{ t.founded }}')">✏️ Edit</button>
+        <form method="POST" action="/teams/delete/{{ t.team_id }}" onsubmit="return confirm('Delete {{ t.team_name }}?')">
+          <button class="btn btn-danger btn-sm">🗑️ Del</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal-overlay" id="addTeamModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('addTeamModal')">✕</button>
+    <h2>➕ ADD NEW TEAM</h2>
+    <form method="POST" action="/teams/add">
+      <div class="form-grid">
+        <div><label>Team Name</label><input name="team_name" required placeholder="e.g. Neon Wolves"></div>
+        <div><label>Game</label>
+          <select name="game">
+            <option>Valorant</option><option>CS2</option>
+            <option>League of Legends</option><option>Dota 2</option><option>Other</option>
+          </select>
+        </div>
+        <div><label>Country</label><input name="country" required placeholder="e.g. Thailand"></div>
+        <div><label>Founded Date</label><input name="founded" type="date" required></div>
+      </div>
+      <div style="margin-top:16px;text-align:right;">
+        <button type="submit" class="btn btn-primary">Save Team</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editTeamModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('editTeamModal')">✕</button>
+    <h2>✏️ EDIT TEAM</h2>
+    <form method="POST" id="editTeamForm">
+      <div class="form-grid">
+        <div><label>Team Name</label><input name="team_name" id="et_name" required></div>
+        <div><label>Game</label>
+          <select name="game" id="et_game">
+            <option>Valorant</option><option>CS2</option>
+            <option>League of Legends</option><option>Dota 2</option><option>Other</option>
+          </select>
+        </div>
+        <div><label>Country</label><input name="country" id="et_country" required></div>
+        <div><label>Founded Date</label><input name="founded" type="date" id="et_founded" required></div>
+      </div>
+      <div style="margin-top:16px;text-align:right;">
+        <button type="submit" class="btn btn-primary">Update Team</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEdit(id, name, game, country, founded) {
+  document.getElementById('editTeamForm').action = '/teams/edit/' + id;
+  document.getElementById('et_name').value = name;
+  document.getElementById('et_country').value = country;
+  document.getElementById('et_founded').value = founded;
+  const sel = document.getElementById('et_game');
+  for (let o of sel.options) o.selected = o.value === game;
+  openModal('editTeamModal');
+}
+</script>
+{% endblock %}

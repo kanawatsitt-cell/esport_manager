@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Tournaments — E-Sports Manager{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>🏆 <span class="hl">TOURNAMENTS</span></h1>
+  <button class="btn btn-primary" onclick="openModal('addTournModal')">+ Add Tournament</button>
+</div>
+
+<div class="card">
+  <div class="scrollable">
+  <table>
+    <thead><tr>
+      <th>#</th><th>Name</th><th>Game</th><th>Location</th><th>Start</th><th>End</th><th>Prize Pool</th><th>Actions</th>
+    </tr></thead>
+    <tbody>
+    {% for t in tournaments %}
+    <tr>
+      <td style="color:var(--muted);">{{ t.tournament_id }}</td>
+      <td><strong>{{ t.name }}</strong></td>
+      <td><span class="badge badge-blue">{{ t.game }}</span></td>
+      <td>{{ t.location }}</td>
+      <td style="color:var(--muted);">{{ t.start_date }}</td>
+      <td style="color:var(--muted);">{{ t.end_date }}</td>
+      <td><span style="color:var(--gold);font-weight:700;">${{ "{:,.0f}".format(t.prize_pool) }}</span></td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-edit btn-sm"
+          onclick="openEditTourn({{ t.tournament_id }},'{{ t.name }}','{{ t.game }}','{{ t.start_date }}','{{ t.end_date }}',{{ t.prize_pool }},'{{ t.location }}')">
+          ✏️ Edit
+        </button>
+        <form method="POST" action="/tournaments/delete/{{ t.tournament_id }}" onsubmit="return confirm('Delete {{ t.name }}?')">
+          <button class="btn btn-danger btn-sm">🗑️ Del</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal-overlay" id="addTournModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('addTournModal')">✕</button>
+    <h2>➕ ADD TOURNAMENT</h2>
+    <form method="POST" action="/tournaments/add">
+      <div class="form-grid">
+        <div style="grid-column:span 2"><label>Tournament Name</label><input name="name" required placeholder="e.g. VCT Bangkok 2025"></div>
+        <div><label>Game</label>
+          <select name="game">
+            <option>Valorant</option><option>CS2</option>
+            <option>League of Legends</option><option>Dota 2</option><option>Other</option>
+          </select>
+        </div>
+        <div><label>Location</label><input name="location" required placeholder="e.g. Bangkok"></div>
+        <div><label>Start Date</label><input name="start_date" type="date" required></div>
+        <div><label>End Date</label><input name="end_date" type="date" required></div>
+        <div><label>Prize Pool ($)</label><input name="prize_pool" type="number" required placeholder="e.g. 500000"></div>
+      </div>
+      <div style="margin-top:16px;text-align:right;">
+        <button type="submit" class="btn btn-primary">Save Tournament</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editTournModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('editTournModal')">✕</button>
+    <h2>✏️ EDIT TOURNAMENT</h2>
+    <form method="POST" id="editTournForm">
+      <div class="form-grid">
+        <div style="grid-column:span 2"><label>Tournament Name</label><input name="name" id="eto_name" required></div>
+        <div><label>Game</label>
+          <select name="game" id="eto_game">
+            <option>Valorant</option><option>CS2</option>
+            <option>League of Legends</option><option>Dota 2</option><option>Other</option>
+          </select>
+        </div>
+        <div><label>Location</label><input name="location" id="eto_loc" required></div>
+        <div><label>Start Date</label><input name="start_date" type="date" id="eto_start" required></div>
+        <div><label>End Date</label><input name="end_date" type="date" id="eto_end" required></div>
+        <div><label>Prize Pool ($)</label><input name="prize_pool" type="number" id="eto_prize" required></div>
+      </div>
+      <div style="margin-top:16px;text-align:right;">
+        <button type="submit" class="btn btn-primary">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEditTourn(id, name, game, start, end, prize, loc) {
+  document.getElementById('editTournForm').action = '/tournaments/edit/' + id;
+  document.getElementById('eto_name').value = name;
+  document.getElementById('eto_start').value = start;
+  document.getElementById('eto_end').value = end;
+  document.getElementById('eto_prize').value = prize;
+  document.getElementById('eto_loc').value = loc;
+  const gs = document.getElementById('eto_game');
+  for (let o of gs.options) o.selected = o.value === game;
+  openModal('editTournModal');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — E-Sports Manager{% endblock %}
+{% block content %}
+<h1>⚡ <span class="hl">DASHBOARD</span></h1>
+
+<!-- Stat Cards -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="label">Total Teams</div>
+    <div class="value">{{ stats.teams }}</div>
+    <div class="icon">🛡️</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Total Players</div>
+    <div class="value">{{ stats.players }}</div>
+    <div class="icon">🎮</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Tournaments</div>
+    <div class="value">{{ stats.tournaments }}</div>
+    <div class="icon">🏆</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Total Prize Distributed</div>
+    <div class="value">${{ "{:,.0f}".format(stats.total_prize) }}</div>
+    <div class="icon">💰</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+  <!-- Leaderboard -->
+  <div class="card">
+    <div class="card-title">🏅 TEAM LEADERBOARD</div>
+    <table>
+      <thead><tr>
+        <th>#</th><th>Team</th><th>Game</th><th>Country</th><th>Points</th><th>Earnings</th>
+      </tr></thead>
+      <tbody>
+      {% for t in top_teams %}
+      <tr>
+        <td class="place-{{ loop.index if loop.index <= 3 else '' }}">{{ loop.index }}</td>
+        <td><strong>{{ t.team_name }}</strong></td>
+        <td><span class="badge badge-blue">{{ t.game }}</span></td>
+        <td>{{ t.country }}</td>
+        <td><span style="color:var(--gold);font-weight:700;">{{ t.total_points }}</span></td>
+        <td style="color:var(--green);">${{ "{:,.0f}".format(t.total_prize) }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Recent Results -->
+  <div class="card">
+    <div class="card-title">🎯 RECENT MATCH RESULTS</div>
+    <table>
+      <thead><tr>
+        <th>Team</th><th>Tournament</th><th>Place</th><th>Prize</th>
+      </tr></thead>
+      <tbody>
+      {% for r in recent_results %}
+      <tr>
+        <td><strong>{{ r.team_name }}</strong></td>
+        <td style="color:var(--muted);font-size:.82rem;">{{ r.tournament_name }}</td>
+        <td class="place-{{ r.placement if r.placement <= 3 else '' }}">
+          {{ '#' + r.placement|string }}
+        </td>
+        <td style="color:var(--green);">${{ "{:,.0f}".format(r.prize_won) }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

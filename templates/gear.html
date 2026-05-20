@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Gear — E-Sports Manager{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>🖱️ <span class="hl">GEAR</span></h1>
+  <button class="btn btn-primary" onclick="openModal('addGearModal')">+ Add Gear</button>
+</div>
+
+<div class="card">
+  <div class="scrollable">
+  <table>
+    <thead><tr>
+      <th>#</th><th>Player (IGN)</th><th>Team</th><th>Type</th><th>Brand</th><th>Model</th><th>Purchased</th><th>Actions</th>
+    </tr></thead>
+    <tbody>
+    {% for g in gear_list %}
+    <tr>
+      <td style="color:var(--muted);">{{ g.gear_id }}</td>
+      <td><strong style="color:var(--accent);">{{ g.ign }}</strong></td>
+      <td><span class="badge badge-purple">{{ g.team_name }}</span></td>
+      <td><span class="badge badge-blue">{{ g.gear_type }}</span></td>
+      <td>{{ g.brand }}</td>
+      <td>{{ g.model }}</td>
+      <td style="color:var(--muted);">{{ g.purchase_date }}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-edit btn-sm"
+          onclick="openEditGear({{ g.gear_id }},{{ g.player_id }},'{{ g.gear_type }}','{{ g.brand }}','{{ g.model }}','{{ g.purchase_date }}')">
+          ✏️ Edit
+        </button>
+        <form method="POST" action="/gear/delete/{{ g.gear_id }}" onsubmit="return confirm('Delete this gear?')">
+          <button class="btn btn-danger btn-sm">🗑️ Del</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal-overlay" id="addGearModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('addGearModal')">✕</button>
+    <h2>➕ ADD GEAR</h2>
+    <form method="POST" action="/gear/add">
+      <div class="form-grid">
+        <div><label>Player</label>
+          <select name="player_id">
+            {% for p in players %}<option value="{{ p.player_id }}">{{ p.ign }}</option>{% endfor %}
+          </select>
+        </div>
+        <div><label>Gear Type</label>
+          <select name="gear_type">
+            <option>Mouse</option><option>Keyboard</option><option>Headset</option>
+            <option>Monitor</option><option>Mousepad</option><option>Chair</option><option>Other</option>
+          </select>
+        </div>
+        <div><label>Brand</label><input name="brand" required placeholder="e.g. Logitech"></div>
+        <div><label>Model</label><input name="model" required placeholder="e.g. G Pro X"></div>
+        <div><label>Purchase Date</label><input name="purchase_date" type="date" required></div>
+      </div>
+      <div style="margin-top:16px;text-align:right;">
+        <button type="submit" class="btn btn-primary">Save Gear</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editGearModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('editGearModal')">✕</button>
+    <h2>✏️ EDIT GEAR</h2>
+    <form method="POST" id="editGearForm">
+      <div class="form-grid">
+        <div><label>Player</label>
+          <select name="player_id" id="eg_player">
+            {% for p in players %}<option value="{{ p.player_id }}">{{ p.ign }}</option>{% endfor %}
+          </select>
+        </div>
+        <div><label>Gear Type</label>
+          <select name="gear_type" id="eg_type">
+            <option>Mouse</option><option>Keyboard</option><option>Headset</option>
+            <option>Monitor</option><option>Mousepad</option><option>Chair</option><option>Other</option>
+          </select>
+        </div>
+        <div><label>Brand</label><input name="brand" id="eg_brand" required></div>
+        <div><label>Model</label><input name="model" id="eg_model" required></div>
+        <div><label>Purchase Date</label><input name="purchase_date" type="date" id="eg_date" required></div>
+      </div>
+      <div style="margin-top:16px;text-align:right;">
+        <button type="submit" class="btn btn-primary">Update Gear</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEditGear(id, pid, gtype, brand, model, date) {
+  document.getElementById('editGearForm').action = '/gear/edit/' + id;
+  document.getElementById('eg_brand').value = brand;
+  document.getElementById('eg_model').value = model;
+  document.getElementById('eg_date').value = date;
+  const ps = document.getElementById('eg_player');
+  for (let o of ps.options) o.selected = parseInt(o.value) === pid;
+  const ts = document.getElementById('eg_type');
+  for (let o of ts.options) o.selected = o.value === gtype;
+  openModal('editGearModal');
+}
+</script>
+{% endblock %}
